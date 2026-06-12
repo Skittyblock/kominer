@@ -1,3 +1,4 @@
+/* table */
 th {
 	text-align: left;
 }
@@ -6,8 +7,12 @@ tr.archived td:not(:first-child) {
 	opacity: 0.5;
 }
 
-/* slight spacing between columns */
+#vocabulary-table th:nth-child(2),
+#vocabulary-table td:nth-child(2) {
+	width: 10rem;
+}
+
 #vocabulary-table th + th,
 #vocabulary-table td + td {
-	padding-left: 12px;
+	padding-left: 12px; /* slight spacing between columns */
 }
