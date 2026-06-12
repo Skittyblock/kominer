@@ -52,7 +52,7 @@ pub async fn create_session(
         }
 
         let is_new_session_id = !sessions.contains_key(&req.id);
-        if is_new_session_id && sessions.len() >= SESSION_LIMIT as usize {
+        if is_new_session_id && sessions.len() >= crate::SESSION_LIMIT as usize {
             return Err((
                 StatusCode::TOO_MANY_REQUESTS,
                 format!("too many people connected, try again later"),
