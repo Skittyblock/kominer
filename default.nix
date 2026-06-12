@@ -2,6 +2,7 @@
   lib,
   rustPlatform,
   rev ? "dirty",
+  publicMode ? false,
 }: let
   p = (lib.importTOML ./Cargo.toml).package;
 in
@@ -22,6 +23,8 @@ in
     };
 
     cargoLock.lockFile = ./Cargo.lock;
+
+    buildFeatures = lib.optionals publicMode ["public_mode"];
 
     buildInputs = [];
     nativeBuildInputs = [];

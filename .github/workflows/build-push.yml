@@ -33,5 +33,5 @@ jobs:
           ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
       - name: Build and push
         run: |
-          nix build
+          nix build .#all
           attic push $ATTIC_CACHE result

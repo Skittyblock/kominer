@@ -15,7 +15,26 @@
   in {
     packages = forAllSystems (pkgs: rec {
       default = kominer;
-      kominer = pkgs.callPackage ./default.nix {rev = self.dirtyRev or self.rev or "dirty";};
+
+      kominer = pkgs.callPackage ./default.nix {
+        rev = self.dirtyRev or self.rev or "dirty";
+        publicMode = false;
+      };
+      kominer-public = pkgs.callPackage ./default.nix {
+        rev = self.dirtyRev or self.rev or "dirty";
+        publicMode = true;
+      };
+
+      all = pkgs.linkFarm "kominer-all" [
+        {
+          name = "kominer";
+          path = kominer;
+        }
+        {
+          name = "kominer-public";
+          path = kominer-public;
+        }
+      ];
     });
 
     devShells = forAllSystems (pkgs: {
