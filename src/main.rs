@@ -89,7 +89,7 @@ async fn main() {
     {
         tokio::fs::remove_dir_all(&state.storage_root)
             .await
-            .unwrap();
+            .ok();
         if let Some(ref auth) = state.auth {
             let user_dir = state.storage_root.join(&auth.user);
             tokio::fs::create_dir_all(&user_dir).await.unwrap();
