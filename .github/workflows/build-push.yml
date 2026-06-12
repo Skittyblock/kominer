@@ -1,0 +1,37 @@
+name: Build and push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/build-push.yml"
+      - "**/*.rs"
+      - "flake.lock"
+      - "*.nix"
+      - "Cargo.toml"
+
+env:
+  ATTIC_SERVER: "https://cache.skitty.xyz/"
+  ATTIC_CACHE: "public"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure attic
+        run: |
+          nix profile add nixpkgs#attic-client
+          attic login --set-default central "$ATTIC_SERVER" "$ATTIC_TOKEN"
+          attic use "$ATTIC_CACHE"
+        env:
+          ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
+      - name: Build and push
+        run: |
+          nix build
+          attic push $ATTIC_CACHE result

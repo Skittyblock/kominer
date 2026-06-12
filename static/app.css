@@ -1,0 +1,13 @@
+th {
+	text-align: left;
+}
+
+tr.archived td:not(:first-child) {
+	opacity: 0.5;
+}
+
+/* slight spacing between columns */
+#vocabulary-table th + th,
+#vocabulary-table td + td {
+	padding-left: 12px;
+}

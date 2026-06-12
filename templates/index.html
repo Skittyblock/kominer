@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>kominer</title>
+		<link rel="stylesheet" href="/static/app.css" />
+	</head>
+	<body>
+		<main>
+			<h1>kominer</h1>
+
+			<form id="session-form">
+				<label>
+					{%~ if public_mode -%} id
+					<input
+						id="user-id"
+						name="id"
+						inputmode="numeric"
+						pattern="[0-9]{16}"
+						maxlength="16"
+						required
+					/>
+					{%~ else -%} user
+					<input id="user-id" name="id" required />
+					{%~ endif -%}
+				</label>
+
+				{%~ if public_mode -%}
+				<button type="button" id="generate-id">generate</button>
+				{%~ endif -%}
+
+				<br />
+
+				<label>
+					password
+					<input id="password" name="password" type="password" />
+				</label>
+				<br />
+
+				<button type="submit">
+					{%~ if public_mode -%}start{%~ else -%}connect{%~ endif -%}
+				</button>
+			</form>
+
+			<section id="result" hidden>
+				<h2>details</h2>
+				<dl>
+					<dt>url</dt>
+					<dd id="webdav-url"></dd>
+
+					<dt>username</dt>
+					<dd id="username"></dd>
+
+					<dt>password</dt>
+					<dd>
+						<span id="result-password">••••••••</span>
+						<button type="button" id="toggle-result-password">
+							show
+						</button>
+					</dd>
+
+					<dt>status</dt>
+					<dd id="status">Waiting</dd>
+				</dl>
+			</section>
+		</main>
+
+		<section id="vocabulary-section" hidden>
+			<h2>vocabulary</h2>
+			<div>
+				<button type="button" id="toggle-archived">
+					show archived
+				</button>
+			</div>
+			<p id="vocabulary-summary">empty</p>
+			<table id="vocabulary-table">
+				<thead>
+					<tr>
+						<th>archive</th>
+						<th>word</th>
+						<th>sentence</th>
+						<th>created</th>
+					</tr>
+				</thead>
+				<tbody id="vocabulary-body"></tbody>
+			</table>
+		</section>
+
+		<script src="/static/app.js"></script>
+	</body>
+</html>

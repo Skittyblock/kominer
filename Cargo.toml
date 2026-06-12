@@ -1,0 +1,25 @@
+[package]
+name = "kominer"
+version = "0.1.0"
+edition = "2024"
+description = "a tool to mine sentences from the koreader vocabulary builder"
+repository = "https://github.com/Skittyblock/kominer"
+publish = false
+
+[features]
+default = []
+public_mode = []
+
+[dependencies]
+askama = "0.16"
+axum = { version = "0.8", features = ["macros"] }
+base64 = "0.22"
+chrono = { version = "0.4", features = ["serde"] }
+dav-server = "0.11"
+dotenv = "0.15"
+futures-util = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.52", features = ["fs"] }
+tokio-rusqlite = { version = "0.7", features = ["bundled"] }
+tower-http = { version = "0.6", features = ["fs"] }
