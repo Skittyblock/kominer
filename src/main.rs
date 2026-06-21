@@ -11,11 +11,9 @@ use tokio::sync::{RwLock, broadcast};
 use tower_http::services::ServeDir;
 
 mod api;
+mod cleanup;
 mod dav;
 mod web;
-
-#[cfg(feature = "public_mode")]
-mod cleanup;
 
 use api::events::FileEvent;
 
@@ -84,21 +82,7 @@ async fn main() {
 
     println!("storage location: {}", state.storage_root.display());
 
-    // clear old session files
-    #[cfg(feature = "public_mode")]
-    {
-        tokio::fs::remove_dir_all(&state.storage_root)
-            .await
-            .ok();
-        if let Some(ref auth) = state.auth {
-            let user_dir = state.storage_root.join(&auth.user);
-            tokio::fs::create_dir_all(&user_dir).await.unwrap();
-        }
-    };
-
-    tokio::fs::create_dir_all(&state.storage_root)
-        .await
-        .unwrap();
+    cleanup::startup(&state).await;
 
     #[cfg(feature = "public_mode")]
     tokio::spawn(cleanup::clean_sessions(state.clone()));
