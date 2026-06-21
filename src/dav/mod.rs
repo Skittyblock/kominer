@@ -1,4 +1,4 @@
-use crate::{AppState, DB_FILE_NAME, api, parse_basic_auth, validate_session};
+use crate::{AppState, api, parse_basic_auth, validate_session};
 use axum::{
     body::Body,
     extract::State,
@@ -6,6 +6,7 @@ use axum::{
     response::Response,
 };
 
+#[cfg(feature = "public_mode")]
 const MAX_DB_SIZE: u64 = 25 * 1024 * 1024; // 25mb
 
 pub async fn handle(
@@ -22,45 +23,57 @@ pub async fn handle(
         return unauthorized();
     }
 
-    if !is_allowed_method(req.method()) {
-        return Response::builder()
-            .status(StatusCode::METHOD_NOT_ALLOWED)
-            .body(Body::from("method not allowed"))
-            .unwrap();
-    }
+    // allow static login to upload anything, even in public mode
+    #[cfg(feature = "public_mode")]
+    let is_reserved = state
+        .auth
+        .as_ref()
+        .is_some_and(|auth| auth.user == username);
 
-    if !is_allowed_dav_path(req.uri().path()) {
-        return Response::builder()
-            .status(StatusCode::FORBIDDEN)
-            .body(Body::from(format!("only {DB_FILE_NAME} is allowed")))
-            .unwrap();
-    }
+    #[cfg(feature = "public_mode")]
+    if !is_reserved {
+        use crate::DB_FILE_NAME;
 
-    if req.method() == Method::PUT {
-        let Some(length) = content_length(&headers) else {
+        if !is_allowed_method(req.method()) {
             return Response::builder()
-                .status(StatusCode::LENGTH_REQUIRED)
-                .body(Body::from("Content-Length required for uploads"))
-                .unwrap();
-        };
-
-        if length > MAX_DB_SIZE {
-            return Response::builder()
-                .status(StatusCode::PAYLOAD_TOO_LARGE)
-                .body(Body::from(format!(
-                    "file too large; max {} bytes",
-                    MAX_DB_SIZE
-                )))
+                .status(StatusCode::METHOD_NOT_ALLOWED)
+                .body(Body::from("method not allowed"))
                 .unwrap();
         }
 
-        if req.uri().path() != format!("/dav/{DB_FILE_NAME}") {
+        if !is_allowed_dav_path(req.uri().path()) {
             return Response::builder()
                 .status(StatusCode::FORBIDDEN)
-                .body(Body::from(format!(
-                    "uploads are only allowed to {DB_FILE_NAME}",
-                )))
+                .body(Body::from(format!("only {DB_FILE_NAME} is allowed")))
                 .unwrap();
+        }
+
+        if req.method() == Method::PUT {
+            let Some(length) = content_length(&headers) else {
+                return Response::builder()
+                    .status(StatusCode::LENGTH_REQUIRED)
+                    .body(Body::from("Content-Length required for uploads"))
+                    .unwrap();
+            };
+
+            if length > MAX_DB_SIZE {
+                return Response::builder()
+                    .status(StatusCode::PAYLOAD_TOO_LARGE)
+                    .body(Body::from(format!(
+                        "file too large; max {} bytes",
+                        MAX_DB_SIZE
+                    )))
+                    .unwrap();
+            }
+
+            if req.uri().path() != format!("/dav/{DB_FILE_NAME}") {
+                return Response::builder()
+                    .status(StatusCode::FORBIDDEN)
+                    .body(Body::from(format!(
+                        "uploads are only allowed to {DB_FILE_NAME}",
+                    )))
+                    .unwrap();
+            }
         }
     }
 
@@ -87,11 +100,13 @@ pub async fn handle(
     response
 }
 
+#[cfg(feature = "public_mode")]
 fn is_allowed_dav_path(path: &str) -> bool {
-    path == "/dav/" || path == format!("/dav/{DB_FILE_NAME}")
+    path == "/dav/" || path == format!("/dav/{}", crate::DB_FILE_NAME)
 }
 
 // https://http.dev/webdav
+#[cfg(feature = "public_mode")]
 fn is_allowed_method(method: &Method) -> bool {
     matches!(
         *method,
@@ -101,6 +116,7 @@ fn is_allowed_method(method: &Method) -> bool {
         || method.as_str() == "UNLOCK"
 }
 
+#[cfg(feature = "public_mode")]
 fn content_length(headers: &HeaderMap) -> Option<u64> {
     headers
         .get(axum::http::header::CONTENT_LENGTH)?
