@@ -15,7 +15,7 @@ pub struct VocabularyResponse {
 #[derive(Serialize)]
 struct VocabularyItem {
     word: String,
-    title_id: i64,
+    title: Option<String>,
     create_time: i64,
     prev_context: Option<String>,
     next_context: Option<String>,
@@ -55,16 +55,17 @@ pub async fn get_vocabulary(
         .call(|conn| {
             let mut stmt = conn.prepare(
                 r#"
-                SELECT word, title_id, create_time, prev_context, next_context, highlight
-                FROM vocabulary
-                ORDER BY create_time DESC
+                SELECT v.word, t.name, v.create_time, v.prev_context, v.next_context, v.highlight
+                FROM vocabulary v
+                LEFT JOIN title t ON t.id = v.title_id
+                ORDER BY v.create_time DESC
                 "#,
             )?;
 
             let rows = stmt.query_map([], |row| {
                 Ok(VocabularyItem {
                     word: row.get(0)?,
-                    title_id: row.get(1)?,
+                    title: row.get(1)?,
                     create_time: row.get(2)?,
                     prev_context: row.get(3)?,
                     next_context: row.get(4)?,

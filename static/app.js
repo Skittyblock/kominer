@@ -222,7 +222,7 @@ function renderVocabulary(items) {
 	if (visibleItems.length === 0) {
 		const tr = document.createElement("tr");
 		const td = document.createElement("td");
-		td.colSpan = 4;
+		td.colSpan = 5;
 		td.textContent = showArchived
 			? "no vocabulary entries found."
 			: "no visible vocabulary entries.";
@@ -249,6 +249,7 @@ function renderVocabulary(items) {
 			item.next_context,
 		);
 		appendCell(tr, formatTimestamp(item.create_time));
+		appendCell(tr, item.title);
 
 		vocabularyBody.appendChild(tr);
 	}

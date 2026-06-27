@@ -1,7 +1,6 @@
+use crate::PUBLIC_MODE;
 use askama::Template;
 use axum::{http::StatusCode, response::Html};
-
-use crate::PUBLIC_MODE;
 
 #[derive(Template)]
 #[template(path = "index.html")]
